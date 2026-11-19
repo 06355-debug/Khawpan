@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>ตรวจคูปอง | Trash to Treasure</title>
+<style>
+  :root { --bg:#f1f5f9; --card:#fff; --text:#0f172a; --muted:#64748b; --line:#cbd5e1; --ok:#15803d; --bad:#dc2626; --warn:#b45309; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --line:#334155; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:max(16px, env(safe-area-inset-top)) 16px 24px; background:var(--bg); color:var(--text); font-family:'Prompt', system-ui, sans-serif; }
+  .card { max-width:420px; margin:24px auto; background:var(--card); border-radius:20px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,.08); }
+  h1 { font-size:18px; margin:0 0 4px; } p.sub { margin:0 0 16px; color:var(--muted); font-size:13px; }
+  label { display:block; font-size:12px; font-weight:600; margin:12px 0 4px; }
+  input { width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:16px; }
+  button { width:100%; margin-top:14px; padding:13px; border:0; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; color:#fff; background:#15803d; }
+  button.secondary { background:#334155; } button:disabled { opacity:.5; }
+  #out { margin-top:16px; padding:14px; border-radius:12px; border:1px solid var(--line); font-size:14px; display:none; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>ตรวจ / ตัดคูปองรางวัล</h1>
+  <p class="sub">สำหรับครูหรือเจ้าหน้าที่เท่านั้น</p>
+  <label for="key">รหัสผู้ดูแล (ADMIN_KEY)</label>
+  <input id="key" type="password" autocomplete="off">
+  <label for="code">โค้ดคูปอง</label>
+  <input id="code" placeholder="TTT-SNACK-A1B2C3" autocapitalize="characters" autocomplete="off">
+  <button id="check">ตรวจโค้ด</button>
+  <button id="use" class="secondary">ตรวจและตัดคูปอง (ใช้แล้ว)</button>
+  <div id="out" role="status"></div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const out = $('out');
+  function show(html, color) { out.style.display = 'block'; out.style.color = color; out.innerHTML = html; }
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  async function run(markUsed) {
+    const adminKey = $('key').value, code = $('code').value.trim();
+    if (!adminKey || !code) { show('กรุณากรอกรหัสผู้ดูแลและโค้ดคูปอง', 'var(--bad)'); return; }
+    $('check').disabled = $('use').disabled = true;
+    try {
+      const res = await fetch('/api', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'coupon', adminKey, code, markUsed }) });
+      const data = await res.json();
+      if (!res.ok) { show('❌ ' + esc(data.message || 'เกิดข้อผิดพลาด'), 'var(--bad)'); return; }
+      const c = data.coupon;
+      const when = c.usedAt ? new Date(c.usedAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }) : '';
+      if (data.justMarked) show(`✅ ตัดคูปองเรียบร้อย<br>${esc(c.item)}<br>รหัสนักเรียน ${esc(c.studentId)}`, 'var(--ok)');
+      else if (c.used) show(`⚠️ คูปองนี้ถูกใช้ไปแล้ว (${esc(when)})<br>${esc(c.item)}<br>รหัสนักเรียน ${esc(c.studentId)}`, 'var(--warn)');
+      else show(`✅ โค้ดถูกต้อง ยังไม่ถูกใช้<br>${esc(c.item)}<br>รหัสนักเรียน ${esc(c.studentId)}`, 'var(--ok)');
+    } catch (e) { show('❌ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'var(--bad)'); }
+    finally { $('check').disabled = $('use').disabled = false; }
+  }
+  $('check').onclick = () => run(false);
+  $('use').onclick = () => run(true);
+</script>
+</body>
+</html>

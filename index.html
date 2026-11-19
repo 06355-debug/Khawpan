@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trash to Treasure - เปลี่ยนขยะ เป็นขุมทรัพย์</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        eco: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    },
+                    animation: {
+                        'scan-line': 'scan 1.8s linear infinite',
+                        'bounce-short': 'bounceShort 0.4s ease-out 1',
+                        'spin-fast': 'spin 0.8s linear infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%, 100%': { top: '5%' },
+                            '50%': { top: '90%' },
+                        },
+                        bounceShort: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .video-flip { transform: scaleX(-1); }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-eco-500 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4"></div>
+
+    <!-- MAIN HEADER -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('scan')">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-eco-600 via-emerald-600 to-teal-500 flex items-center justify-center text-amber-300 shadow-md shadow-eco-600/20">
+                    <i class="fa-solid fa-gem text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900">Trash <span class="text-xs text-slate-400 font-medium">to</span> <span class="text-eco-600">Treasure</span></span>
+                        <span class="hidden sm:inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">AI สแกนขยะจริง</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-normal">สแกนขยะ 1 ชิ้น = รับ 1 โทเคนสะสมแลกรางวัล</p>
+                </div>
+            </div>
+
+            <!-- User Status & Balance Bar -->
+            <div class="flex items-center space-x-3">
+                <!-- Live Token Counter -->
+                <div class="bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border border-amber-500/30 rounded-full px-3.5 py-1.5 flex items-center space-x-2 shadow-xs transition-all duration-300">
+                    <div class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs shadow-xs">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div class="text-right">
+                        <span id="user-tokens" class="font-extrabold text-amber-600 text-base leading-none">0</span>
+                        <span class="text-[10px] text-slate-500 font-medium block">โทเคน</span>
+                    </div>
+                </div>
+
+                <!-- Account Info & Auth Actions -->
+                <div class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+                    <div class="w-9 h-9 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center font-extrabold text-xs shadow-xs" id="user-avatar">
+                        ID
+                    </div>
+                    <div class="hidden sm:block text-left leading-tight">
+                        <span class="text-xs font-bold block text-slate-800 truncate max-w-[110px]" id="user-display-name">ยังไม่ได้เข้าสู่ระบบ</span>
+                        <span class="text-[10px] text-slate-400 block" id="user-student-id">รหัส: -</span>
+                    </div>
+                    <button onclick="handleAuthButtonClick()" id="auth-header-btn" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1">
+                        <i class="fa-solid fa-right-to-bracket text-eco-600"></i>
+                        <span id="auth-btn-label">เข้าสู่ระบบ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-20 hidden md:block">
+        <div class="max-w-6xl mx-auto px-4 flex space-x-1">
+            <button onclick="switchTab('scan')" id="tab-btn-scan" class="tab-btn active border-b-2 border-eco-600 text-eco-600 py-3 px-5 text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-wand-magic-sparkles text-base"></i> AI สแกนขยะสะสมเหรียญ
+            </button>
+            <button onclick="switchTab('rewards')" id="tab-btn-rewards" class="tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 py-3 px-5 text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-gift text-base"></i> ร้านค้าแลกรางวัล (3 อย่าง)
+            </button>
+            <button onclick="switchTab('impact')" id="tab-btn-impact" class="tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 py-3 px-5 text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-id-card text-base"></i> บัญชีนักเรียน & สถิติ
+            </button>
+            <button onclick="switchTab('history')" id="tab-btn-history" class="tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 py-3 px-5 text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-clock-rotate-left text-base"></i> ประวัติกิจกรรม
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 mb-16 md:mb-6">
+
+        <!-- TAB 1: REAL AI CAMERA SCANNER -->
+        <section id="tab-content-scan" class="tab-content space-y-6">
+            
+            <!-- Banner Rules & Target Trash Types -->
+            <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white rounded-3xl p-5 shadow-xl border border-emerald-500/20">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-3">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 text-xs px-3 py-1 rounded-full border border-amber-500/30 mb-2 font-semibold">
+                            <i class="fa-solid fa-robot"></i> ตรวจจับขยะ + ถังขยะด้วย Gemini AI
+                        </div>
+                        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">สแกนขยะคู่กับถังขยะ = รับ 1 โทเคนทันที!</h1>
+                        <p class="text-slate-300 text-xs sm:text-sm mt-1">
+                            ถ่ายภาพขยะคู่กับถังขยะในเฟรมเดียวกันเพื่อยืนยันว่านำขยะไปทิ้งจริง หากขาดสิ่งใดสิ่งหนึ่งระบบจะไม่อนุมัติโทเคน
+                        </p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-center shrink-0 w-full sm:w-auto">
+                        <span class="text-[11px] text-emerald-200 block font-medium">บัญชีที่ใช้งานอยู่</span>
+                        <span id="banner-username" class="font-bold text-amber-300 text-xs sm:text-sm">รหัสประจำตัว: -</span>
+                    </div>
+                </div>
+
+                <!-- Trash Category Badges & Dual Verification Rule -->
+                <div class="pt-3 border-t border-white/10">
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl mb-2 text-xs text-amber-200 font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-amber-400 text-sm"></i>
+                        <span>เงื่อนไขสำคัญ: รูปถ่ายต้องเห็นทั้ง <b>"วัตถุขยะ"</b> และ <b>"ถังขยะ"</b> พร้อมกันในเฟรมเดียว</span>
+                    </div>
+                    <span class="text-[11px] text-emerald-300 font-bold block mb-2"><i class="fa-solid fa-check-double"></i> ประเภทขยะที่ยอมรับ (11 ประเภท):</span>
+                    <div class="flex flex-wrap gap-1.5 text-[10px] text-slate-200">
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">📄 กระดาษ/ลัง</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🧴 ขวดพลาสติก</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🍾 ขวดแก้ว</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🥫 โลหะ/กระป๋อง</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🥛 กล่องนม</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🛍️ ถุงเปื้อนเศษอาหาร</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🍿 ซองขนม</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🍱 กล่องโฟม</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🪙 ฟอยล์</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">🧹 เศษผ้า</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">👶 ผ้าอ้อมสำเร็จรูป</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera Viewport Card -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 max-w-3xl mx-auto flex flex-col items-center">
+                
+                <!-- Camera Controls Header -->
+                <div class="w-full flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="camera-status-dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="camera-status-label" class="text-xs font-bold text-slate-700">กล้องสดพร้อมใช้งาน</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleCameraFacing()" title="สลับกล้องหน้า/หลัง" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs rounded-xl font-semibold flex items-center gap-1 transition">
+                            <i class="fa-solid fa-camera-rotate"></i> <span class="hidden sm:inline">สลับกล้อง</span>
+                        </button>
+                        <button onclick="restartCamera()" title="รีสตาร์ทกล้อง" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs flex items-center justify-center transition">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Camera Viewport Box -->
+                <div class="relative w-full aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-slate-800 shadow-inner group">
+                    
+                    <!-- HTML5 Video Stream -->
+                    <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+                    <!-- Canvas snapshot -->
+                    <canvas id="capture-canvas" class="hidden"></canvas>
+
+                    <!-- Preview Captured Image -->
+                    <img id="captured-preview" class="absolute inset-0 w-full h-full object-cover hidden z-10" alt="Captured Frame">
+
+                    <!-- Scan Laser Animation -->
+                    <div id="scanner-laser" class="absolute w-full h-1 bg-gradient-to-r from-transparent via-eco-400 to-transparent shadow-[0_0_15px_#22c55e] animate-scan-line hidden z-20"></div>
+
+                    <!-- Target Framing Guide -->
+                    <div id="target-frame" class="absolute inset-8 sm:inset-12 border-2 border-white/30 rounded-2xl pointer-events-none transition-colors duration-300 z-10">
+                        <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-eco-500 rounded-tl-md"></div>
+                        <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-eco-500 rounded-tr-md"></div>
+                        <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-eco-500 rounded-bl-md"></div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-eco-500 rounded-br-md"></div>
+                        
+                        <div class="absolute bottom-3 left-0 right-0 text-center">
+                            <span class="text-[11px] text-white/90 bg-black/60 px-3 py-1 rounded-full backdrop-blur-xs font-medium" id="scan-instruction-text">
+                                วางขยะและถังขยะให้อยู่ในกรอบเดียวกันแล้วกดสแกน
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- AI Processing Overlay Spinner -->
+                    <div id="ai-processing-overlay" class="absolute inset-0 bg-slate-950/80 text-white flex flex-col items-center justify-center p-6 text-center hidden z-30">
+                        <div class="w-14 h-14 border-4 border-eco-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                        <h4 class="font-bold text-sm text-emerald-400 flex items-center gap-2">
+                            <i class="fa-solid fa-robot"></i> Gemini AI กำลังวิเคราะห์รูปภาพขยะ...
+                        </h4>
+                        <p class="text-xs text-slate-300 mt-1 max-w-xs">
+                            ระบบกำลังตรวจสอบว่าเป็นขยะจริงที่ตรงตามเงื่อนไขหรือไม่ โปรดรอสักครู่
+                        </p>
+                    </div>
+
+                    <!-- Scan SUCCESS Card -->
+                    <div id="scan-result-card" class="absolute inset-x-4 bottom-4 bg-slate-900/95 text-white p-4 rounded-2xl border border-eco-500 shadow-2xl hidden z-30 text-center animate-bounce-short">
+                        <div class="flex items-center justify-center gap-2 text-eco-400 font-extrabold text-sm mb-1">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                            <span>AI ตรวจพบขยะถูกต้อง!</span>
+                        </div>
+                        <div class="text-xs text-emerald-300 font-semibold" id="scan-result-item-name">
+                            ประเภท: พลาสติก/ขวดพลาสติก
+                        </div>
+                        <span class="text-2xl font-extrabold text-amber-400 block my-1">+1 โทเคน</span>
+                        <span class="text-[10px] text-slate-400 block" id="scan-result-reason">เพิ่มเข้าบัญชีของคุณเรียบร้อยแล้ว</span>
+                    </div>
+
+                    <!-- Scan REJECTED Card -->
+                    <div id="scan-reject-card" class="absolute inset-x-4 bottom-4 bg-slate-900/95 text-white p-4 rounded-2xl border border-red-500 shadow-2xl hidden z-30 text-center animate-bounce-short">
+                        <div class="flex items-center justify-center gap-2 text-red-400 font-extrabold text-sm mb-1">
+                            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                            <span>ไม่อนุมัติ: ไม่พบวัตถุที่เป็นขยะ!</span>
+                        </div>
+                        <p class="text-xs text-slate-300 my-1" id="scan-reject-reason">
+                            ภาพที่ถ่ายไม่ตรงกับประเภทขยะที่กำหนด กรุณาถ่ายภาพขยะจริง
+                        </p>
+                        <span class="text-xs font-bold text-red-400 block">+0 โทเคน</span>
+                    </div>
+
+                    <!-- Camera Error Fallback -->
+                    <div id="camera-error-overlay" class="absolute inset-0 bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center hidden z-20">
+                        <div class="w-14 h-14 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-3">
+                            <i class="fa-solid fa-video-slash"></i>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-200">ไม่พบสัญญาณกล้อง หรือยังไม่อนุญาตสิทธิ์</h4>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs">
+                            คุณสามารถเปิดสิทธิ์กล้องในเบราว์เซอร์ หรือใช้วิธีถ่ายรูป/เลือกไฟล์รูปขยะจากเครื่องได้เลย
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Capture & Upload Action Buttons -->
+                <div class="w-full mt-4 space-y-3">
+                    <button id="btn-capture-scan" onclick="captureAndScanWithAI()" class="w-full py-4 bg-eco-600 hover:bg-eco-700 active:scale-[0.99] text-white font-bold rounded-2xl text-base shadow-lg shadow-eco-600/30 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                        <span>ถ่ายภาพขยะ+ถังขยะ สแกนด้วย AI (+1 โทเคน)</span>
+                    </button>
+
+                    <!-- File Upload Fallback -->
+                    <div class="relative text-center">
+                        <input type="file" id="file-upload-input" accept="image/*" onchange="handleFileUploadAI(event)" class="hidden">
+                        <button onclick="document.getElementById('file-upload-input').click()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>หรือเลือกอัปโหลดไฟล์รูปถ่ายขยะคู่กับถังขยะจากเครื่อง</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 2: REWARDS MARKETPLACE (EXACTLY 3 SPECIFIC ITEMS) -->
+        <section id="tab-content-rewards" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">ร้านค้าแลกรางวัล</h1>
+                    <p class="text-slate-500 text-xs sm:text-sm">นำโทเคนที่ได้จากการเก็บขยะมาแลกรับของรางวัลประจำโครงการ (3 รายการ)</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 self-start">
+                    <i class="fa-solid fa-coins text-amber-500 text-sm"></i>
+                    <span>ยอดโทเคนของคุณ: <b id="shop-user-tokens" class="text-amber-700">0</b> เหรียญ</span>
+                </div>
+            </div>
+
+            <!-- Exactly 3 Fixed Reward Items -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Item 1: ขนม (50 Tokens) -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-full h-44 rounded-2xl bg-gradient-to-tr from-amber-100 to-orange-50 border border-amber-200 flex flex-col items-center justify-center text-amber-600 mb-4 relative overflow-hidden">
+                            <i class="fa-solid fa-cookie-bite text-6xl shadow-sm mb-2"></i>
+                            <span class="text-xs font-bold text-amber-800 bg-amber-200/80 px-2.5 py-0.5 rounded-full">หมวดของกิน</span>
+                            <span class="absolute top-3 right-3 bg-amber-500 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                                50 โทเคน
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">เท่ากับขยะ 50 ชิ้น</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">1. ขนม (Snack)</h3>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                            คูปองแลกรับชุดขนมทานเล่นและอาหารว่างแสนอร่อย 1 ซอง สามารถนำโค้ดไปรับได้ที่จุดบริการโครงการ
+                        </p>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-medium">ราคาแลก</span>
+                            <span class="text-xl font-extrabold text-amber-600">50 <span class="text-xs font-semibold text-slate-600">โทเคน</span></span>
+                        </div>
+                        <button onclick="redeemReward('snack')" id="btn-redeem-snack" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                            แลกรับรางวัล
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Item 2: ปากกา (70 Tokens) -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-full h-44 rounded-2xl bg-gradient-to-tr from-blue-100 to-indigo-50 border border-blue-200 flex flex-col items-center justify-center text-blue-600 mb-4 relative overflow-hidden">
+                            <i class="fa-solid fa-pen-nib text-6xl shadow-sm mb-2"></i>
+                            <span class="text-xs font-bold text-blue-800 bg-blue-200/80 px-2.5 py-0.5 rounded-full">หมวดเครื่องเขียน</span>
+                            <span class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                                70 โทเคน
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">เท่ากับขยะ 70 ชิ้น</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">2. ปากการักษ์โลก (Eco Pen)</h3>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                            ปากการักษ์โลกคุณภาพสูง เขียนลื่น สวยงาม จับถนัดมือ เหมาะสำหรับใช้ในการเรียน 1 ด้าม
+                        </p>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-medium">ราคาแลก</span>
+                            <span class="text-xl font-extrabold text-amber-600">70 <span class="text-xs font-semibold text-slate-600">โทเคน</span></span>
+                        </div>
+                        <button onclick="redeemReward('pen')" id="btn-redeem-pen" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                            แลกรับรางวัล
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Item 3: ข้าว (100 Tokens) -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="w-full h-44 rounded-2xl bg-gradient-to-tr from-emerald-100 to-teal-50 border border-emerald-200 flex flex-col items-center justify-center text-emerald-600 mb-4 relative overflow-hidden">
+                            <i class="fa-solid fa-bowl-rice text-6xl shadow-sm mb-2"></i>
+                            <span class="text-xs font-bold text-emerald-800 bg-emerald-200/80 px-2.5 py-0.5 rounded-full">หมวดอาหารหลัก</span>
+                            <span class="absolute top-3 right-3 bg-eco-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                                100 โทเคน
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">เท่ากับขยะ 100 ชิ้น</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">3. ข้าว (Meal Voucher)</h3>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                            คูปองมื้ออาหารกลางวันแลกรับข้าวกล่องร้อนๆ หรืออาหารจานเดียว 1 มื้อ ที่โรงอาหารโรงเรียน
+                        </p>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-medium">ราคาแลก</span>
+                            <span class="text-xl font-extrabold text-amber-600">100 <span class="text-xs font-semibold text-slate-600">โทเคน</span></span>
+                        </div>
+                        <button onclick="redeemReward('rice')" id="btn-redeem-rice" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                            แลกรับรางวัล
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: STUDENT PROFILE & IMPACT STATS -->
+        <section id="tab-content-impact" class="tab-content hidden space-y-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">ข้อมูลบัญชีนักเรียน & สถิติ</h1>
+                <p class="text-slate-500 text-xs sm:text-sm">สรุปผลงานและการช่วยลดขยะส่วนบุคคลของคุณ</p>
+            </div>
+
+            <!-- Student Card Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white p-6 rounded-3xl shadow-lg border border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 font-black text-2xl flex items-center justify-center shadow-md shrink-0" id="card-student-avatar">
+                        ID
+                    </div>
+                    <div>
+                        <span class="bg-eco-500/20 text-eco-300 border border-eco-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            บัตรนักเรียนรักษ์โลก
+                        </span>
+                        <h2 class="text-xl font-bold mt-1 text-white" id="card-student-name">กรุณาเข้าสู่ระบบ</h2>
+                        <p class="text-xs text-slate-300" id="card-student-id-text">รหัสประจำตัว: -</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <button onclick="openAuthModal()" class="flex-1 md:flex-initial px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/20 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-users-viewfinder"></i> สลับบัญชี
+                    </button>
+                    <button onclick="handleLogout()" class="flex-1 md:flex-initial px-4 py-2.5 bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Impact Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
+                    <div class="w-10 h-10 rounded-2xl bg-eco-100 text-eco-600 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </div>
+                    <span class="text-slate-500 text-xs font-medium block">ขยะที่เก็บแล้ว</span>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="stat-total-items" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+                        <span class="text-xs text-slate-500 font-semibold">ชิ้น</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <span class="text-slate-500 text-xs font-medium block">โทเคนคงเหลือ</span>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="stat-total-tokens" class="text-2xl sm:text-3xl font-extrabold text-amber-600">0</span>
+                        <span class="text-xs text-slate-500 font-semibold">เหรียญ</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
+                    <div class="w-10 h-10 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <span class="text-slate-500 text-xs font-medium block">ลดการปล่อย CO2</span>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="stat-total-co2" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0.00</span>
+                        <span class="text-xs text-slate-500 font-semibold">kg CO2e</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <span class="text-slate-500 text-xs font-medium block">แลกของรางวัลแล้ว</span>
+                    <div class="flex items-baseline space-x-1 mt-1">
+                        <span id="stat-redeem-count" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+                        <span class="text-xs text-slate-500 font-semibold">ครั้ง</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eco Level Progress -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">ระดับผู้ช่วยโลก (Eco Level)</span>
+                    <span class="text-xs text-slate-400 font-medium" id="impact-level-progress-text">0 / 30 ชิ้น</span>
+                </div>
+                <h3 id="impact-user-rank" class="text-xl font-bold text-slate-900 mb-1">Level 1: ผู้เริ่มต้นรักษ์โลก</h3>
+                <p class="text-xs text-slate-500">เก็บขยะและสแกนอย่างต่อเนื่องเพื่ออัปเกรดยศรักษ์โลกของคุณ</p>
+
+                <div class="mt-4">
+                    <div class="w-full bg-slate-100 rounded-full h-3 p-0.5 border border-slate-200">
+                        <div id="impact-level-bar" class="bg-gradient-to-r from-eco-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: 5%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: HISTORY LOG -->
+        <section id="tab-content-history" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">ประวัติกิจกรรม</h1>
+                    <p class="text-slate-500 text-xs sm:text-sm">บันทึกรายการรับโทเคนและการแลกรางวัลของคุณ</p>
+                </div>
+                <span class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl font-bold" id="history-account-name">
+                    -
+                </span>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+                <div class="divide-y divide-slate-100" id="history-list-container">
+                    <!-- Dynamic Log Items -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 px-2 py-1 shadow-lg">
+        <div class="flex justify-around items-center">
+            <button onclick="switchTab('scan')" id="mob-tab-btn-scan" class="mob-tab-btn flex flex-col items-center py-1.5 px-3 text-eco-600">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">AI สแกน</span>
+            </button>
+            <button onclick="switchTab('rewards')" id="mob-tab-btn-rewards" class="mob-tab-btn flex flex-col items-center py-1.5 px-3 text-slate-400">
+                <i class="fa-solid fa-gift text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">แลกรางวัล</span>
+            </button>
+            <button onclick="switchTab('impact')" id="mob-tab-btn-impact" class="mob-tab-btn flex flex-col items-center py-1.5 px-3 text-slate-400">
+                <i class="fa-solid fa-id-card text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">โปรไฟล์</span>
+            </button>
+            <button onclick="switchTab('history')" id="mob-tab-btn-history" class="mob-tab-btn flex flex-col items-center py-1.5 px-3 text-slate-400">
+                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">ประวัติ</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MODAL 1: AUTHENTICATION (LOGIN / REGISTER WITH 5-DIGIT STUDENT ID) -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-eco-600 to-teal-500 text-amber-300 mx-auto flex items-center justify-center text-2xl shadow-lg mb-3">
+                    <i class="fa-solid fa-gem"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-900">Trash to Treasure</h3>
+                <p class="text-xs text-slate-500 mt-0.5">เข้าสู่ระบบด้วยรหัสประจำตัวนักเรียน 5 หลัก</p>
+            </div>
+
+            <!-- Tab Buttons for Switch Login/Register -->
+            <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl mb-5">
+                <button onclick="toggleAuthForm('login')" id="auth-tab-login" class="py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-xs">
+                    เข้าสู่ระบบ
+                </button>
+                <button onclick="toggleAuthForm('register')" id="auth-tab-register" class="py-2 text-xs font-bold rounded-lg transition text-slate-500 hover:text-slate-900">
+                    ลงทะเบียนใหม่ (0 โทเคน)
+                </button>
+            </div>
+
+            <!-- FORM 1: LOGIN -->
+            <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">รหัสประจำตัวนักเรียน (5 หลัก)</label>
+                    <div class="relative">
+                        <input type="text" id="login-student-id" maxlength="5" pattern="\d{5}" required placeholder="เช่น 12345" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-sm font-mono font-bold focus:ring-2 focus:ring-eco-500 focus:outline-none">
+                        <i class="fa-solid fa-id-badge absolute left-3.5 top-3.5 text-slate-400"></i>
+                    </div>
+                    <span id="login-id-error" class="text-[11px] text-red-500 mt-1 block hidden"></span>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">รหัสผ่าน</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-eco-500 focus:outline-none">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-eco-600 hover:bg-eco-700 text-white rounded-2xl text-sm font-bold shadow-md transition">
+                    เข้าสู่ระบบใช้งาน
+                </button>
+            </form>
+
+            <!-- FORM 2: REGISTER -->
+            <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-4 hidden">
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 text-[11px] p-3 rounded-xl">
+                    <i class="fa-solid fa-circle-info text-amber-500"></i> นักเรียนใหม่ที่ลงทะเบียนจะได้รับยอดเริ่มต้น <b>0 โทเคน</b> และสามารถเก็บขยะเพื่อสะสมแต้มได้ทันที
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">รหัสประจำตัวนักเรียน (5 หลัก)</label>
+                    <div class="relative">
+                        <input type="text" id="reg-student-id" maxlength="5" pattern="\d{5}" required placeholder="เช่น 55555" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-mono font-bold focus:ring-2 focus:ring-eco-500 focus:outline-none">
+                        <i class="fa-solid fa-id-badge absolute left-3.5 top-3 text-slate-400"></i>
+                    </div>
+                    <span id="reg-id-error" class="text-[11px] text-red-500 mt-1 block hidden"></span>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">ชื่อ - นามสกุล นักเรียน</label>
+                    <div class="relative">
+                        <input type="text" id="reg-full-name" required placeholder="เช่น ด.ช. สมชาย รักษ์ดี" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-eco-500 focus:outline-none">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-700 block mb-1">ตั้งรหัสผ่าน</label>
+                    <div class="relative">
+                        <input type="password" id="reg-password" required placeholder="อย่างน้อย 4 ตัวอักษร" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-eco-500 focus:outline-none">
+                        <i class="fa-solid fa-key absolute left-3.5 top-3 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-eco-600 hover:bg-eco-700 text-white rounded-2xl text-sm font-bold shadow-md transition">
+                    ยืนยันลงทะเบียนบัญชีใหม่
+                </button>
+            </form>
+
+            
+
+        </div>
+    </div>
+
+    <!-- MODAL 2: REWARD COUPON RECEIPT -->
+    <div id="reward-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center">
+            
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-eco-600 mx-auto flex items-center justify-center text-3xl mb-3">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-900" id="modal-reward-title">ทำรายการสำเร็จ!</h3>
+            <p class="text-xs text-slate-500 mt-1">แสดงรหัสคูปองนี้ให้ครูหรือคุณครูประจำจุดบริการเพื่อรับของรางวัล</p>
+
+            <!-- Coupon Receipt Box -->
+            <div class="my-5 bg-amber-50/50 border border-amber-200 rounded-2xl p-4 relative">
+                <span class="text-[10px] font-bold text-amber-700 uppercase tracking-widest block mb-1">Coupon Claim Code</span>
+                <div class="text-2xl font-mono font-extrabold text-slate-900 tracking-wider" id="modal-coupon-code">
+                    TTT-SNACK-0000
+                </div>
+
+                <!-- Simulated Barcode Visual -->
+                <div class="mt-3 flex justify-center items-center h-9 gap-1 bg-white p-2 rounded-lg border border-slate-200">
+                    <div class="w-1 h-full bg-slate-900"></div>
+                    <div class="w-2 h-full bg-slate-900"></div>
+                    <div class="w-0.5 h-full bg-slate-900"></div>
+                    <div class="w-1.5 h-full bg-slate-900"></div>
+                    <div class="w-1 h-full bg-slate-900"></div>
+                    <div class="w-3 h-full bg-slate-900"></div>
+                    <div class="w-1 h-full bg-slate-900"></div>
+                    <div class="w-0.5 h-full bg-slate-900"></div>
+                    <div class="w-2 h-full bg-slate-900"></div>
+                </div>
+
+                <button onclick="copyCouponCode()" class="mt-3 text-xs text-eco-600 hover:text-eco-700 font-semibold flex items-center justify-center gap-1 mx-auto">
+                    <i class="fa-regular fa-copy"></i> <span id="copy-text-btn">คัดลอกรหัส</span>
+                </button>
+            </div>
+
+            <button onclick="closeRewardModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-semibold text-sm transition">
+                เสร็จสิ้น / ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC WITH GEMINI VISION AI -->
+    <script>
+        // SESSION (โทเคนและข้อมูลผู้ใช้อยู่ฝั่งเซิร์ฟเวอร์ ไม่เก็บใน localStorage)
+        const SESSION_KEY = 'TTT_SESSION_TOKEN_V4';
+        let sessionToken = null;
+        let currentUser = null;
+
+        // กัน HTML injection เวลาแสดงข้อความที่มาจากผู้ใช้/AI
+        function escapeHtml(str) {
+            return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // REWARD CATALOG (EXACTLY 3 ITEMS)
+        const rewardCatalog = {
+            'snack': { id: 'snack', title: 'ขนม (Snack)', cost: 50, codePrefix: 'SNACK' },
+            'pen': { id: 'pen', title: 'ปากการักษ์โลก (Eco Pen)', cost: 70, codePrefix: 'PEN' },
+            'rice': { id: 'rice', title: 'ข้าว (Meal Voucher)', cost: 100, codePrefix: 'RICE' }
+        };
+
+        // CAMERA STATE
+        let mediaStream = null;
+        let currentFacingMode = 'environment';
+        let isProcessingScan = false;
+
+        let isRedeeming = false;
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            // ล้างข้อมูลรุ่นเก่าที่เคยเก็บในเครื่อง (ไม่ปลอดภัย)
+            ['TTT_USERS_DATA_STABLE_V3', 'TTT_CURRENT_STUDENT_ID_V3'].forEach(k => localStorage.removeItem(k));
+            sessionToken = localStorage.getItem(SESSION_KEY);
+            checkUserSession();
+        });
+
+        // API HELPER
+        async function api(action, data = {}) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (sessionToken) headers['Authorization'] = 'Bearer ' + sessionToken;
+            let res;
+            try {
+                res = await fetch('/api', { method: 'POST', headers, body: JSON.stringify({ action, ...data }) });
+            } catch (e) {
+                const err = new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ต');
+                err.code = 'network';
+                throw err;
+            }
+            let out = null;
+            try { out = await res.json(); } catch (e) { /* ไม่ใช่ JSON */ }
+            if (!res.ok) {
+                const err = new Error((out && out.message) || `เกิดข้อผิดพลาด (${res.status})`);
+                err.status = res.status;
+                err.code = (out && out.error) || 'error';
+                if (res.status === 401 && sessionToken) handleSessionExpired();
+                throw err;
+            }
+            return out;
+        }
+
+        function setSession(token, user) {
+            sessionToken = token;
+            currentUser = user;
+            localStorage.setItem(SESSION_KEY, token);
+        }
+
+        function clearSession() {
+            sessionToken = null;
+            currentUser = null;
+            localStorage.removeItem(SESSION_KEY);
+        }
+
+        function handleSessionExpired() {
+            clearSession();
+            stopCamera();
+            updateUserUI();
+            showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'error');
+            openAuthModal();
+        }
+
+        function getActiveUser() {
+            return currentUser;
+        }
+
+        // CHECK LOGIN SESSION
+        async function checkUserSession() {
+            if (!sessionToken) {
+                openAuthModal();
+                return;
+            }
+            try {
+                const r = await api('me');
+                currentUser = r.user;
+                document.getElementById('auth-modal').classList.add('hidden');
+                updateUserUI();
+                startCamera();
+            } catch (e) {
+                if (e.code === 'network') showToast(e.message, 'error');
+                openAuthModal();
+            }
+        }
+
+        // UI UPDATER
+        function updateUserUI() {
+            const user = getActiveUser();
+            const authBtnLabel = document.getElementById('auth-btn-label');
+
+            if (!user) {
+                document.getElementById('user-tokens').innerText = '0';
+                document.getElementById('shop-user-tokens').innerText = '0';
+                document.getElementById('user-display-name').innerText = 'ยังไม่ได้เข้าสู่ระบบ';
+                document.getElementById('user-student-id').innerText = 'รหัส: -';
+                document.getElementById('banner-username').innerText = 'รหัสประจำตัว: -';
+                document.getElementById('card-student-name').innerText = 'ไม่ได้เข้าสู่ระบบ';
+                document.getElementById('card-student-id-text').innerText = 'รหัสประจำตัว: -';
+                document.getElementById('history-account-name').innerText = '-';
+                authBtnLabel.innerText = 'เข้าสู่ระบบ';
+                updateRewardButtons(0);
+                return;
+            }
+
+            authBtnLabel.innerText = 'สลับ/ออก';
+
+            // Top bar
+            document.getElementById('user-tokens').innerText = user.tokens;
+            document.getElementById('shop-user-tokens').innerText = user.tokens;
+            document.getElementById('user-display-name').innerText = user.displayName;
+            document.getElementById('user-student-id').innerText = `รหัส: ${user.studentId}`;
+            document.getElementById('user-avatar').innerText = user.studentId.substring(0, 2);
+
+            // Banner & Profile Card
+            document.getElementById('banner-username').innerText = `รหัสประจำตัว: ${user.studentId} (${user.displayName})`;
+            document.getElementById('card-student-name').innerText = user.displayName;
+            document.getElementById('card-student-id-text').innerText = `รหัสประจำตัวนักเรียน: ${user.studentId}`;
+            document.getElementById('card-student-avatar').innerText = user.studentId;
+            document.getElementById('history-account-name').innerText = `รหัส ${user.studentId} (${user.displayName})`;
+
+            // Stats
+            document.getElementById('stat-total-items').innerText = user.scansCount || 0;
+            document.getElementById('stat-total-tokens').innerText = user.tokens || 0;
+            document.getElementById('stat-total-co2').innerText = ((user.scansCount || 0) * 0.08).toFixed(2);
+            document.getElementById('stat-redeem-count').innerText = user.redeemCount || 0;
+
+            // Eco Rank Calculation
+            const level = Math.floor((user.scansCount || 0) / 30) + 1;
+            const nextLevelItems = level * 30;
+            document.getElementById('impact-user-rank').innerText = `Level ${level}: ${getRankTitle(level)}`;
+            document.getElementById('impact-level-progress-text').innerText = `${user.scansCount || 0} / ${nextLevelItems} ชิ้นเพื่ออัปเกรด`;
+            const pct = Math.min(100, Math.round(((user.scansCount || 0) / nextLevelItems) * 100));
+            document.getElementById('impact-level-bar').style.width = `${pct}%`;
+
+            // Reward buttons state
+            updateRewardButtons(user.tokens);
+
+            // Render History
+            renderHistory();
+        }
+
+        function getRankTitle(level) {
+            if (level === 1) return 'ผู้เริ่มต้นรักษ์โลก (Eco Beginner)';
+            if (level === 2) return 'นักล่าขยะมือฉมัง (Trash Hunter)';
+            if (level === 3) return 'นักสร้างขุมทรัพย์ (Treasure Master)';
+            return 'ตำนานขยะเปลี่ยนโลก (Zero-Waste Legend)';
+        }
+
+        // UPDATE REWARD BUTTON STATES
+        function updateRewardButtons(userTokens) {
+            Object.keys(rewardCatalog).forEach(key => {
+                const item = rewardCatalog[key];
+                const btn = document.getElementById(`btn-redeem-${key}`);
+                if (!btn) return;
+
+                if (userTokens >= item.cost) {
+                    btn.disabled = false;
+                    btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs bg-eco-600 hover:bg-eco-700 text-white cursor-pointer active:scale-95";
+                    btn.innerText = "แลกรับรางวัล";
+                } else {
+                    btn.disabled = true;
+                    btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs bg-slate-100 text-slate-400 cursor-not-allowed";
+                    btn.innerText = `ขาดอีก ${item.cost - userTokens} โทเคน`;
+                }
+            });
+        }
+
+        // AUTHENTICATION LOGIC (STUDENT ID 5 DIGITS)
+        function toggleAuthForm(mode) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('auth-tab-login');
+            const tabReg = document.getElementById('auth-tab-register');
+
+            if (mode === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLogin.className = "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-xs";
+                tabReg.className = "py-2 text-xs font-bold rounded-lg transition text-slate-500 hover:text-slate-900";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabReg.className = "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-xs";
+                tabLogin.className = "py-2 text-xs font-bold rounded-lg transition text-slate-500 hover:text-slate-900";
+            }
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const idInput = document.getElementById('login-student-id').value.trim();
+            const passInput = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-id-error');
+
+            errEl.classList.add('hidden');
+
+            if (!/^\d{5}$/.test(idInput)) {
+                errEl.innerText = 'กรุณากรอกรหัสประจำตัวนักเรียนเป็นตัวเลข 5 หลักเท่านั้น';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            const submitBtn = e.submitter || document.querySelector('#form-login button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+            try {
+                const r = await api('login', { studentId: idInput, password: passInput });
+                setSession(r.token, r.user);
+                updateUserUI();
+                document.getElementById('auth-modal').classList.add('hidden');
+                showToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ ${r.user.displayName}`, 'success');
+                startCamera();
+            } catch (err) {
+                if (err.code === 'not_found' || err.code === 'bad_id') {
+                    errEl.innerText = err.message;
+                    errEl.classList.remove('hidden');
+                } else {
+                    showToast(err.message, 'error');
+                }
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        }
+
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const idInput = document.getElementById('reg-student-id').value.trim();
+            const nameInput = document.getElementById('reg-full-name').value.trim();
+            const passInput = document.getElementById('reg-password').value;
+            const errEl = document.getElementById('reg-id-error');
+
+            errEl.classList.add('hidden');
+
+            if (!/^\d{5}$/.test(idInput)) {
+                errEl.innerText = 'กรุณากรอกรหัสประจำตัวนักเรียนเป็นตัวเลข 5 หลักเท่านั้น';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (passInput.length < 4) {
+                showToast('รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร', 'error');
+                return;
+            }
+
+            const submitBtn = e.submitter || document.querySelector('#form-register button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+            try {
+                const r = await api('register', { studentId: idInput, displayName: nameInput, password: passInput });
+                setSession(r.token, r.user);
+                updateUserUI();
+                document.getElementById('auth-modal').classList.add('hidden');
+                showToast(`ลงทะเบียนสำเร็จ! ยินดีต้อนรับ ${r.user.displayName}`, 'success');
+                startCamera();
+            } catch (err) {
+                if (err.code === 'exists' || err.code === 'bad_id') {
+                    errEl.innerText = err.message;
+                    errEl.classList.remove('hidden');
+                } else {
+                    showToast(err.message, 'error');
+                }
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        }
+
+        function handleAuthButtonClick() {
+            openAuthModal();
+        }
+
+        function openAuthModal() {
+            stopCamera();
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+
+        async function handleLogout() {
+            stopCamera();
+            try { await api('logout'); } catch (e) { /* ไม่เป็นไร */ }
+            clearSession();
+            updateUserUI();
+            showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
+            openAuthModal();
+        }
+
+        // CAMERA LIFECYCLE MANAGEMENT
+        async function startCamera() {
+            const videoEl = document.getElementById('webcam-video');
+            const errorOverlay = document.getElementById('camera-error-overlay');
+            const statusLabel = document.getElementById('camera-status-label');
+            const statusDot = document.getElementById('camera-status-dot');
+
+            stopCamera(); // Clean existing
+
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = mediaStream;
+
+                if (currentFacingMode === 'user') {
+                    videoEl.classList.add('video-flip');
+                } else {
+                    videoEl.classList.remove('video-flip');
+                }
+
+                errorOverlay.classList.add('hidden');
+                statusLabel.innerText = "กล้องสดพร้อมใช้งาน";
+                statusDot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+            } catch (err) {
+                console.warn("Camera streaming not permitted:", err);
+                errorOverlay.classList.remove('hidden');
+                statusLabel.innerText = "กล้องไม่พร้อมใช้งาน (สามารถใช้อัปโหลดรูปได้)";
+                statusDot.className = "w-3 h-3 rounded-full bg-amber-500";
+            }
+        }
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+        }
+
+        function toggleCameraFacing() {
+            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+            startCamera();
+        }
+
+        function restartCamera() {
+            startCamera();
+            showToast('กำลังเชื่อมต่อกล้องใหม่...', 'info');
+        }
+
+        // -------------------------------------------------------------
+        // SCAN: ส่งรูปไปให้เซิร์ฟเวอร์ตรวจด้วย AI และให้โทเคน (ตัดสินที่ฝั่งเซิร์ฟเวอร์)
+        // -------------------------------------------------------------
+
+        // ย่อรูปก่อนส่ง (ด้านยาวสุด 1024px) ให้เร็วขึ้นและไม่ชนลิมิตขนาดคำขอ
+        function downscaleToJpegDataUrl(srcDataUrl, maxSide = 1024, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+                    const c = document.createElement('canvas');
+                    c.width = Math.max(1, Math.round(img.width * scale));
+                    c.height = Math.max(1, Math.round(img.height * scale));
+                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                    resolve(c.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => reject(new Error('โหลดรูปไม่สำเร็จ'));
+                img.src = srcDataUrl;
+            });
+        }
+
+        // ขั้นตอนร่วมของทั้ง "ถ่ายจากกล้อง" และ "อัปโหลดไฟล์"
+        async function processScanImage(fullDataUrl, scanningText) {
+            const previewImg = document.getElementById('captured-preview');
+            const laser = document.getElementById('scanner-laser');
+            const aiOverlay = document.getElementById('ai-processing-overlay');
+            const resultCard = document.getElementById('scan-result-card');
+            const rejectCard = document.getElementById('scan-reject-card');
+            const instructionText = document.getElementById('scan-instruction-text');
+
+            previewImg.src = fullDataUrl;
+            previewImg.classList.remove('hidden');
+            laser.classList.remove('hidden');
+            aiOverlay.classList.remove('hidden');
+            resultCard.classList.add('hidden');
+            rejectCard.classList.add('hidden');
+            instructionText.innerText = scanningText;
+
+            const showReject = (msg) => {
+                document.getElementById('scan-reject-reason').innerText = msg;
+                rejectCard.classList.remove('hidden');
+                instructionText.innerText = '❌ ตรวจสอบไม่อนุมัติ';
+                showToast(msg, 'error');
+            };
+
+            try {
+                const base64Clean = fullDataUrl.replace(/^data:image\/jpeg;base64,/, '');
+                const r = await api('scan', { image: base64Clean });
+
+                laser.classList.add('hidden');
+                aiOverlay.classList.add('hidden');
+                currentUser = r.user;
+
+                if (r.approved) {
+                    document.getElementById('scan-result-item-name').innerText = `ตรวจพบ: ${r.itemType || 'ขยะและถังขยะ'}`;
+                    document.getElementById('scan-result-reason').innerText = r.reason || 'ยืนยันการนำขยะไปทิ้งลงถังขยะเรียบร้อยแล้ว';
+                    resultCard.classList.remove('hidden');
+                    instructionText.innerText = 'สแกนอนุมัติสำเร็จ (+1 โทเคน)';
+                    updateUserUI();
+                    showToast('🎉 ตรวจพบขยะคู่กับถังขยะสำเร็จ! ได้รับ +1 โทเคน', 'success');
+                } else {
+                    updateUserUI();
+                    showReject(r.reason || '❌ ไม่พบขยะและถังขยะในภาพ กรุณาถ่ายภาพขยะที่กำลังนำไปทิ้งลงถังขยะ');
+                }
+            } catch (err) {
+                laser.classList.add('hidden');
+                aiOverlay.classList.add('hidden');
+                if (err.status !== 401) {
+                    showReject(err.code === 'ai_unavailable' || err.code === 'network' || err.code === 'server_error'
+                        ? err.message + ' กรุณาลองใหม่อีกครั้ง'
+                        : err.message);
+                }
+            }
+
+            setTimeout(() => {
+                previewImg.classList.add('hidden');
+                resultCard.classList.add('hidden');
+                rejectCard.classList.add('hidden');
+                instructionText.innerText = 'วางขยะและถังขยะให้อยู่ในกรอบเดียวกันแล้วกดสแกน';
+                isProcessingScan = false;
+            }, 3500);
+        }
+
+        // CAMERA CAPTURE
+        async function captureAndScanWithAI() {
+            const user = getActiveUser();
+            if (!user) {
+                showToast('กรุณาเข้าสู่ระบบก่อนทำการสแกนขยะ', 'error');
+                openAuthModal();
+                return;
+            }
+            if (isProcessingScan) return;
+
+            const video = document.getElementById('webcam-video');
+            const canvas = document.getElementById('capture-canvas');
+            if (!video || !video.videoWidth) {
+                showToast('กล้องยังไม่พร้อม กรุณารอสักครู่หรือกดรีสตาร์ทกล้อง', 'error');
+                return;
+            }
+            isProcessingScan = true;
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            if (currentFacingMode === 'user') {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            try {
+                const smallDataUrl = await downscaleToJpegDataUrl(canvas.toDataURL('image/jpeg', 0.85));
+                await processScanImage(smallDataUrl, 'กำลังตรวจสอบขยะคู่กับถังขยะด้วย AI...');
+            } catch (e) {
+                showToast('จับภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+                isProcessingScan = false;
+            }
+        }
+
+        // FILE UPLOAD
+        function handleFileUploadAI(event) {
+            const input = event.target;
+            const file = input.files[0];
+            input.value = ''; // เลือกไฟล์เดิมซ้ำได้
+
+            const user = getActiveUser();
+            if (!user) {
+                showToast('กรุณาเข้าสู่ระบบก่อนสแกนขยะ', 'error');
+                openAuthModal();
+                return;
+            }
+            if (!file || isProcessingScan) return;
+            if (!file.type.startsWith('image/')) {
+                showToast('กรุณาเลือกไฟล์รูปภาพเท่านั้น', 'error');
+                return;
+            }
+            isProcessingScan = true;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const smallDataUrl = await downscaleToJpegDataUrl(e.target.result);
+                    await processScanImage(smallDataUrl, 'กำลังวิเคราะห์รูปขยะคู่กับถังขยะด้วย AI...');
+                } catch (err) {
+                    showToast('อ่านไฟล์รูปไม่ได้ กรุณาเลือกไฟล์รูปภาพอื่น', 'error');
+                    isProcessingScan = false;
+                }
+            };
+            reader.onerror = () => {
+                showToast('อ่านไฟล์ไม่สำเร็จ', 'error');
+                isProcessingScan = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // REDEEM REWARD LOGIC
+        async function redeemReward(rewardKey) {
+            const user = getActiveUser();
+            if (!user) {
+                showToast('กรุณาเข้าสู่ระบบก่อนทำการแลกของรางวัล', 'error');
+                openAuthModal();
+                return;
+            }
+            const item = rewardCatalog[rewardKey];
+            if (!item || isRedeeming) return;
+
+            if (user.tokens < item.cost) {
+                showToast(`โทเคนไม่เพียงพอ (ต้องการ ${item.cost} โทเคน)`, 'error');
+                return;
+            }
+
+            isRedeeming = true;
+            try {
+                const r = await api('redeem', { rewardKey });
+                currentUser = r.user;
+                updateUserUI();
+
+                document.getElementById('modal-reward-title').innerText = `แลก ${r.title} สำเร็จ!`;
+                document.getElementById('modal-coupon-code').innerText = r.couponCode;
+                document.getElementById('reward-modal').classList.remove('hidden');
+                showToast(`ทำรายการแลก ${r.title} เรียบร้อยแล้ว`, 'success');
+            } catch (err) {
+                if (err.status !== 401) showToast(err.message, 'error');
+            } finally {
+                isRedeeming = false;
+            }
+        }
+
+        function closeRewardModal() {
+            document.getElementById('reward-modal').classList.add('hidden');
+        }
+
+        function copyCouponCode() {
+            const code = document.getElementById('modal-coupon-code').innerText;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = code;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            const btnText = document.getElementById('copy-text-btn');
+            btnText.innerText = 'คัดลอกสำเร็จแล้ว!';
+            setTimeout(() => { btnText.innerText = 'คัดลอกรหัส'; }, 2000);
+        }
+
+        // HISTORY LIST RENDER
+        function renderHistory() {
+            const container = document.getElementById('history-list-container');
+            const user = getActiveUser();
+            container.innerHTML = '';
+
+            if (!user || !user.history || user.history.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-inbox text-3xl mb-2"></i>
+                        <p class="text-xs">ยังไม่มีประวัติกิจกรรมในระบบ</p>
+                    </div>
+                `;
+                return;
+            }
+
+            user.history.forEach(item => {
+                const isEarn = item.type === 'earn';
+                const isSystem = item.type === 'system';
+                const row = document.createElement('div');
+                row.className = 'p-4 flex items-center justify-between hover:bg-slate-50 transition';
+                
+                let iconClass = isEarn ? 'fa-wand-magic-sparkles text-eco-600 bg-eco-100' : 
+                                isSystem ? 'fa-circle-info text-blue-600 bg-blue-100' : 
+                                'fa-gift text-amber-600 bg-amber-100';
+
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-2xl ${iconClass} flex items-center justify-center text-base shrink-0">
+                            <i class="fa-solid ${iconClass.split(' ')[0]}"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-800">${escapeHtml(item.title)}</div>
+                            <div class="text-[11px] text-slate-400">${escapeHtml(item.time)} ${item.code ? `• โค้ด: ${escapeHtml(item.code)}` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        ${isSystem ? '<span class="text-xs text-slate-400 font-bold">ระบบ</span>' : `
+                            <span class="font-extrabold text-sm ${isEarn ? 'text-eco-600' : 'text-slate-700'}">
+                                ${isEarn ? '+' : ''}${Number(item.tokens)} โทเคน
+                            </span>
+                        `}
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // NAVIGATION TAB SWITCHER
+        function switchTab(tabKey) {
+            if (tabKey !== 'scan') {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`tab-content-${tabKey}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-eco-600', 'text-eco-600');
+                btn.classList.add('border-transparent', 'text-slate-600');
+            });
+            const activeDeskBtn = document.getElementById(`tab-btn-${tabKey}`);
+            if (activeDeskBtn) {
+                activeDeskBtn.classList.remove('border-transparent', 'text-slate-600');
+                activeDeskBtn.classList.add('border-eco-600', 'text-eco-600');
+            }
+
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.remove('text-eco-600');
+                btn.classList.add('text-slate-400');
+            });
+            const activeMobBtn = document.getElementById(`mob-tab-btn-${tabKey}`);
+            if (activeMobBtn) {
+                activeMobBtn.classList.remove('text-slate-400');
+                activeMobBtn.classList.add('text-eco-600');
+            }
+        }
+
+        // TOAST SYSTEM
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white' : 
+                            type === 'info' ? 'bg-eco-800 text-white' : 
+                            'bg-red-600 text-white';
+            
+            const icon = type === 'success' ? 'fa-circle-check text-eco-400' : 
+                         type === 'info' ? 'fa-circle-info text-emerald-200' : 
+                         'fa-triangle-exclamation';
+
+            toast.className = `${bgClass} p-3.5 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-semibold transform transition-all duration-300 translate-y-2 pointer-events-auto border border-white/10`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base"></i>
+                <span class="flex-1">${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
