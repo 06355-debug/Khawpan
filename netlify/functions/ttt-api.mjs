@@ -381,5 +381,3 @@ export default async (req) => {
     return json(500, { error: 'server_error', message: 'เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้ง' });
   }
 };
-
-export const config = { path: '/api' };
