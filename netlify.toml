@@ -4,3 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  
+[[redirects]]
+  from = "/api"
+  to = "/.netlify/functions/ttt-api"
+  status = 200
+  force = true
